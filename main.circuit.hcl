@@ -265,6 +265,20 @@ circuit "php" {
     notify = [handler.reload]
   }
 
+  # Each extension package restarts a running PHP-FPM as it installs: an rpm
+  # file trigger on the Red Hat family, a dpkg trigger on Debian. Installed
+  # one by one, a few of them restart it more often than systemd's start
+  # limit allows, and systemd then refuses to start it at all. Apache can
+  # start PHP-FPM early on the Red Hat family, where php-fpm adds a Wants=
+  # to httpd.service. Clears the refusal and starts it again.
+  step "start_limit" {
+    command {
+      command  = "systemctl reset-failed ${local.layout[each.key].service} && systemctl start ${local.layout[each.key].service}"
+      unless   = "! systemctl -q is-failed ${local.layout[each.key].service}"
+      triggers = { for k, v in conn3x_package.php__extension : k => v.revision if startswith(k, "${each.key}/") }
+    }
+  }
+
   step "ini" {
     file {
       path      = local.layout[each.key].ini
