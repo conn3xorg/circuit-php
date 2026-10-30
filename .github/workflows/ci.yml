@@ -93,6 +93,11 @@ jobs:
           done
           composer --version
           EOF
+      # PHP-FPM's own log says why it didn't start or a check failed.
+      - name: Show PHP-FPM's log
+        if: failure()
+        run: |
+          sudo podman exec circuit-php sh -c 'systemctl status --no-pager "php*-fpm.service"; journalctl --no-pager -o short-precise -u "php*-fpm.service" -u httpd.service -u apache2.service' || true
       - name: Clean up
         if: always()
         working-directory: examples/local
