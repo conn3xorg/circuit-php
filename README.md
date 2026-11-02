@@ -1,5 +1,7 @@
 # circuit-php
 
+[![Conn3x grade](https://conn3x.org/circuits/php/grade.svg)](https://conn3x.org/circuits/php/grade)
+
 A Conn3x circuit that installs PHP with PHP-FPM, the extensions you name, your php.ini settings and your FPM pools. Put it next to [circuit-apache](https://github.com/conn3xorg/circuit-apache) or [circuit-nginx](https://github.com/conn3xorg/circuit-nginx), and [circuit-mysql](https://github.com/conn3xorg/circuit-mysql) or [circuit-mariadb](https://github.com/conn3xorg/circuit-mariadb), and you have a LAMP or LEMP stack described in one place.
 
 PHP looks different on every distribution. Debian 13 calls the MySQL driver `php8.4-mysql` and keeps pools in `/etc/php/8.4/fpm/pool.d`; Rocky Linux calls it `php-mysqlnd` and keeps pools in `/etc/php-fpm.d`. The service is `php8.4-fpm` on one and `php-fpm` on the other, and so is the binary that tests the config. You name extensions the way PHP does, `mysqli` or `pdo_pgsql`, and the circuit finds the package. Every change shows up in `conn3x plan` as a diff, and PHP-FPM's own config test runs before each reload, so a broken pool fails the apply while the running PHP-FPM carries on with the pools it has.
