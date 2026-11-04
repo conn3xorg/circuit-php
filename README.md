@@ -158,7 +158,7 @@ On each host, in order:
 1. With `php_version` set, adds Surý's or Remi's repository, as above.
 2. Installs PHP-FPM and the command-line PHP, then a package for each extension in `extensions`. Many extensions are built into a package the circuit installs anyway, such as `ctype` or `openssl`, and that's fine. Each extension package restarts a running PHP-FPM as it installs, and a handful in a row can trip systemd's start limit; when that happens, the circuit clears it and starts PHP-FPM again.
 3. Writes the `ini` settings to a file that loads after the distribution's own: `/etc/php/VERSION/mods-available/conn3x.ini`, linked into the `fpm` and `cli` `conf.d` as `99-conn3x.ini`, on Debian and Ubuntu; `/etc/php.d/99-conn3x.ini` on the Red Hat family. They apply to PHP-FPM and to `php` on the command line.
-4. Writes a file for each pool in the pool directory, `NAME.conf`. On Debian and Ubuntu, points `php` at this version, and stops and disables any other version's PHP-FPM.
+4. Writes a file for each pool in the pool directory, `NAME.conf`. Each new or changed pool is tested first: PHP-FPM's config test runs on a temporary main config that includes the other pools and the new file, and only a pool that passes replaces `NAME.conf`. A pool that fails stays out of the pool directory, so a restart or a reboot before the next good apply still starts PHP-FPM with the pools it had. On Debian and Ubuntu, points `php` at this version, and stops and disables any other version's PHP-FPM.
 5. With `install_composer`, downloads Composer's `composer.phar` for `composer_version` to `/usr/local/bin/composer` and checks its SHA-256 against `composer_sha256`.
 6. Runs PHP-FPM's config test, `php-fpm8.4 -t` or `php-fpm -t`, whenever the ini file or a pool changed, or a pool was added or taken out. When it fails, so does the apply, with PHP-FPM's error, before any reload.
 7. Starts PHP-FPM now and at boot, and reloads it gracefully after the test passes or an extension is installed: workers finish their requests, then PHP-FPM starts again with the new config.
@@ -228,7 +228,7 @@ CI installs `mysqli`, `pdo_mysql`, `gd`, `intl`, `mbstring`, `zip`, `curl` and `
 
 ## Requirements
 
-Requires Conn3x v0.6.9 or later and systemd on each host, with a package mirror the host can reach. With `php_version` set, the host has to reach `packages.sury.org`, `ppa.launchpadcontent.net` or `rpms.remirepo.net`, and with `install_composer`, `getcomposer.org`.
+Requires Conn3x v0.7.0 or later, for `file`'s `validate`, and systemd on each host, with a package mirror the host can reach. With `php_version` set, the host has to reach `packages.sury.org`, `ppa.launchpadcontent.net` or `rpms.remirepo.net`, and with `install_composer`, `getcomposer.org`.
 
 ## Tested on
 

@@ -74,6 +74,7 @@ locals {
       prefix   = "php${local.version[name]}-"
       service  = "php${local.version[name]}-fpm"
       fpm      = "php-fpm${local.version[name]}"
+      fpm_conf = "/etc/php/${local.version[name]}/fpm/php-fpm.conf"
       pool_dir = "/etc/php/${local.version[name]}/fpm/pool.d"
       ini      = "/etc/php/${local.version[name]}/mods-available/conn3x.ini"
       run_dir  = "/run/php"
@@ -82,6 +83,7 @@ locals {
       prefix   = "php-"
       service  = "php-fpm"
       fpm      = "php-fpm"
+      fpm_conf = "/etc/php-fpm.conf"
       pool_dir = "/etc/php-fpm.d"
       ini      = "/etc/php.d/99-conn3x.ini"
       run_dir  = "/run/php-fpm"
@@ -144,6 +146,23 @@ locals {
         [for k, v in p.settings : "${k} = ${v}"],
         [""],
       ))
+    }
+  }
+
+  # Tests a candidate pool file before it replaces NAME.conf: a throwaway
+  # main config includes every other pool and the candidate, %s, and
+  # php-fpm -t reads that. A pool that fails never reaches the pool
+  # directory, so a restart before the next good apply can't load it.
+  pool_test = {
+    for host, l in local.layout : host => {
+      for name in keys(var.pools) : name => join("; ", [
+        "m=$(mktemp)",
+        "trap 'rm -f \"$m\"' EXIT",
+        "grep -v '^include=' ${l.fpm_conf} > \"$m\"",
+        "for f in ${l.pool_dir}/*.conf; do if [ -e \"$f\" ] && [ \"$f\" != ${l.pool_dir}/${name}.conf ]; then echo \"include=$f\"; fi; done >> \"$m\"",
+        "echo include=%s >> \"$m\"",
+        "${l.fpm} -t -y \"$m\"",
+      ])
     }
   }
 
@@ -292,6 +311,7 @@ circuit "php" {
     file {
       path      = "${local.layout[each.key].pool_dir}/${item.key}.conf"
       content   = local.pool_config[each.key][item.key]
+      validate  = local.pool_test[each.key][item.key]
       on_remove = "delete"
     }
   }
@@ -315,10 +335,10 @@ circuit "php" {
     }
   }
 
-  # PHP-FPM's own config test, after the pool and ini files change and
-  # before the reload, so a broken pool fails the apply and the running
-  # PHP-FPM keeps the pools it has. It runs, and reloads, when a pool is
-  # added or taken out too.
+  # PHP-FPM's own config test of the whole set, after the pool and ini
+  # files change and before the reload. Each pool was already tested before
+  # it was written; this runs, and reloads, when a pool is taken out or the
+  # ini file changes too.
   step "check" {
     command {
       command = "${local.layout[each.key].fpm} -t"
