@@ -216,8 +216,8 @@ CI installs `mysqli`, `pdo_mysql`, `gd`, `intl`, `mbstring`, `zip`, `curl` and `
 | `ini` | map(string) | `{}` | php.ini settings, such as `{ memory_limit = "256M" }`. Values are written as given, so quote one the way php.ini needs. |
 | `pools` | map(object) | `{}` | PHP-FPM pools, by name. Each takes optional `user`, `group`, `listen`, `listen_owner`, `listen_group`, `listen_mode`, `pm` (`static`, `dynamic` or `ondemand`), `max_children`, `start_servers`, `min_spare_servers`, `max_spare_servers`, `max_requests` and `settings`, a map of further pool directives. See [Pools](#pools). |
 | `install_composer` | bool | `false` | Install Composer as `/usr/local/bin/composer`. |
-| `composer_version` | string | `"2.11.0"` | Composer release to install. Change `composer_sha256` with it. |
-| `composer_sha256` | string | The SHA-256 of 2.11.0 | SHA-256 of `composer.phar` for `composer_version`, as published at `https://getcomposer.org/download/VERSION/composer.phar.sha256sum`. |
+| `composer_version` | string | `"2.11.3"` | Composer release to install. Change `composer_sha256` with it. |
+| `composer_sha256` | string | The SHA-256 of 2.11.3 | SHA-256 of `composer.phar` for `composer_version`, as published at `https://getcomposer.org/download/VERSION/composer.phar.sha256sum`. |
 
 ## Outputs
 

@@ -144,18 +144,18 @@ variable "install_composer" {
 
 variable "composer_version" {
   type        = string
-  default     = "2.11.0"
+  default     = "2.11.3"
   description = "Composer release to install. Change composer_sha256 with it."
 
   validation {
     condition     = can(regex("^[0-9]+\\.[0-9]+\\.[0-9]+$", var.composer_version))
-    error_message = "composer_version is a release such as \"2.11.0\"."
+    error_message = "composer_version is a release such as \"2.11.3\"."
   }
 }
 
 variable "composer_sha256" {
   type        = string
-  default     = "9674f12a2a181100d889ebfd0b4510805b3e94cea57869b14b383753d602599b"
+  default     = "04f8b003da4e3a2459056591fbfebd02b4dc3e5adeb158616b90cf55a65113ec"
   description = "SHA-256 of composer.phar for composer_version, as published at https://getcomposer.org/download/VERSION/composer.phar.sha256sum."
 
   validation {
