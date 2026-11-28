@@ -289,12 +289,19 @@ circuit "php" {
   # one by one, a few of them restart it more often than systemd's start
   # limit allows, and systemd then refuses to start it at all. Apache can
   # start PHP-FPM early on the Red Hat family, where php-fpm adds a Wants=
-  # to httpd.service. Clears the refusal and starts it again.
+  # to httpd.service. The probe reads after the extensions install; when
+  # PHP-FPM is failed then, this clears the refusal and starts it again.
+  probe "fpm_failed" {
+    command = "systemctl -q is-failed ${local.layout[each.key].service}"
+  }
+
   step "start_limit" {
-    command {
-      command  = "systemctl reset-failed ${local.layout[each.key].service} && systemctl start ${local.layout[each.key].service}"
-      unless   = "! systemctl -q is-failed ${local.layout[each.key].service}"
-      triggers = { for k, v in conn3x_package.php__extension : k => v.revision if startswith(k, "${each.key}/") }
+    only_if = data.conn3x_command.php__fpm_failed[each.key].exit_code == 0
+    service_action {
+      name         = local.layout[each.key].service
+      action       = "start"
+      reset_failed = true
+      triggers     = { for k, v in conn3x_package.php__extension : k => v.revision if startswith(k, "${each.key}/") }
     }
   }
 
@@ -404,6 +411,8 @@ circuit "php_deb" {
 
   # A new php_version installs beside the old one, whose PHP-FPM would keep
   # the pools' sockets. Stops and disables every other version's PHP-FPM.
+  # A command, since which versions are installed is only known on the
+  # host, and a service_action or service step acts on one named unit.
   step "other_versions" {
     command {
       command = "${local.other_fpm[each.key]} | xargs -r systemctl disable --now"
