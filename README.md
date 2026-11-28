@@ -12,7 +12,7 @@ You get your distribution's PHP unless you ask for another version. Then it come
 
 ```hcl
 module "php" {
-  source = "github.com/conn3xorg/circuit-php?ref=v0.3.1"
+  source = "github.com/conn3xorg/circuit-php?ref=v0.4.0"
 
   hosts                = { web1 = "203.0.113.10" }
   ssh_private_key_file = "~/.ssh/id_ed25519"
@@ -228,7 +228,7 @@ CI installs `mysqli`, `pdo_mysql`, `gd`, `intl`, `mbstring`, `zip`, `curl` and `
 
 ## Requirements
 
-Requires Conn3x v0.7.0 or later, for `file`'s `validate`, and systemd on each host, with a package mirror the host can reach. With `php_version` set, the host has to reach `packages.sury.org`, `ppa.launchpadcontent.net` or `rpms.remirepo.net`, and with `install_composer`, `getcomposer.org`.
+Requires Conn3x v0.39.0 or later, for `probe` and `only_if`, and systemd on each host, with a package mirror the host can reach. With `php_version` set, the host has to reach `packages.sury.org`, `ppa.launchpadcontent.net` or `rpms.remirepo.net`, and with `install_composer`, `getcomposer.org`.
 
 ## Tested on
 
